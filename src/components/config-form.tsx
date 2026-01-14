@@ -359,9 +359,9 @@ function PropertyInput({
             handleChange(
               val
                 ? val
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean)
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean)
                 : undefined,
             );
           }}

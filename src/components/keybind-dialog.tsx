@@ -32,50 +32,77 @@ export function KeybindDialog({
   const [open, setOpen] = useState(false);
   const [capturedKeys, setCapturedKeys] = useState<string[]>([]);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [activeModifiers, setActiveModifiers] = useState<Set<string>>(
+    new Set(),
+  );
 
   const displayValue = useCallback(() => {
     const actualValue = value || defaultValue || "";
     if (!actualValue || isLeaderField) return actualValue;
     if (!leaderKey) return actualValue;
-    return actualValue.split(leaderKey).join("<leader>");
+    const normalizedLeader = leaderKey.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`${normalizedLeader},`, "g");
+    return actualValue.replace(regex, "<leader>");
   }, [value, defaultValue, leaderKey, isLeaderField])();
 
   useEffect(() => {
     if (!open) {
       setCapturedKeys([]);
       setIsCapturing(false);
+      setActiveModifiers(new Set());
     }
   }, [open]);
 
   useEffect(() => {
     if (!isCapturing) return;
 
+    const MODIFIER_KEYS = new Set(["Control", "Alt", "Shift", "Meta"]);
+    const MODIFIER_MAP: Record<string, string> = {
+      Control: "ctrl",
+      Alt: "alt",
+      Shift: "shift",
+      Meta: "meta",
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
-      const parts: string[] = [];
+      const key = e.key;
 
-      if (e.ctrlKey || e.key === "Control") parts.push("ctrl");
-      if (e.altKey || e.key === "Alt") parts.push("alt");
-      if (e.shiftKey || e.key === "Shift") parts.push("shift");
-      if (e.metaKey || e.key === "Meta") parts.push("meta");
+      if (MODIFIER_KEYS.has(key)) {
+        setActiveModifiers((prev) => new Set(prev).add(MODIFIER_MAP[key]));
+      } else {
+        const modifiers = Array.from(activeModifiers).sort().join("+");
+        const mainKey = key.toLowerCase();
+        const combination = modifiers ? `${modifiers}+${mainKey}` : mainKey;
 
-      if (!["Control", "Alt", "Shift", "Meta"].includes(e.key)) {
-        parts.push(e.key.toLowerCase());
+        if (combination) {
+          setCapturedKeys((prev) => [...prev, combination]);
+          setActiveModifiers(new Set());
+        }
       }
+    };
 
-      if (parts.length > 0) {
-        setCapturedKeys((prev) => [...prev, parts.join("+")]);
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const key = e.key;
+      if (MODIFIER_KEYS.has(key)) {
+        setActiveModifiers((prev) => {
+          const next = new Set(prev);
+          next.delete(MODIFIER_MAP[key]);
+          return next;
+        });
       }
     };
 
     window.addEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("keyup", handleKeyUp, true);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("keyup", handleKeyUp, true);
     };
-  }, [isCapturing]);
+  }, [isCapturing, activeModifiers]);
 
   const startCapture = () => {
     setCapturedKeys([]);
@@ -84,14 +111,23 @@ export function KeybindDialog({
 
   const stopCapture = () => {
     setIsCapturing(false);
+    setActiveModifiers(new Set());
   };
 
   const saveKeybind = () => {
     if (capturedKeys.length > 0) {
-      let keybind = capturedKeys.join(" ");
+      let keybind = capturedKeys.join(",");
 
       if (!isLeaderField && leaderKey) {
-        keybind = keybind.split(leaderKey).join("<leader>");
+        const normalizedLeader = leaderKey.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          "\\$&",
+        );
+        const regex = new RegExp(
+          `${normalizedLeader.replace(/\+/g, "\\+")},`,
+          "g",
+        );
+        keybind = keybind.replace(regex, "<leader>");
       }
 
       onChange(keybind);
@@ -100,8 +136,16 @@ export function KeybindDialog({
   };
 
   const clearKeybind = () => {
-    onChange("");
-    setOpen(false);
+    if (isCapturing) {
+      setCapturedKeys([]);
+      setActiveModifiers(new Set());
+      return;
+    }
+
+    const hasExistingValue = value || defaultValue;
+    if (hasExistingValue) {
+      onChange("");
+    }
   };
 
   return (
@@ -151,7 +195,7 @@ export function KeybindDialog({
                 </p>
                 {capturedKeys.length > 0 && (
                   <div className="font-mono text-lg bg-background px-4 py-2 rounded border border-border">
-                    {capturedKeys.join(" ")}
+                    {capturedKeys.join(",")}
                   </div>
                 )}
                 <Button onClick={stopCapture} variant="outline" size="sm">
@@ -166,10 +210,10 @@ export function KeybindDialog({
               <p className="text-sm font-medium">Captured Keybind:</p>
               <div className="font-mono text-sm bg-muted px-3 py-2 rounded border border-border">
                 {isLeaderField
-                  ? capturedKeys.join(" ")
+                  ? capturedKeys.join(",")
                   : leaderKey
-                    ? capturedKeys.join(" ").split(leaderKey).join("<leader>")
-                    : capturedKeys.join(" ")}
+                    ? capturedKeys.join(",").split(leaderKey).join("<leader>")
+                    : capturedKeys.join(",")}
               </div>
             </div>
           )}

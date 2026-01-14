@@ -65,18 +65,59 @@ export default function ConfigGeneratorPage({
         }
 
         const keys = [...path] as PropertyKey[];
-        let current: Record<string, unknown> = newConfig;
 
-        for (let i = 0; i < keys.length - 1; i++) {
-          const key = keys[i];
-          if (!(key in current) || current[key] === undefined) {
-            current[key] = {};
+        if (
+          String(keys[0]) === "keybinds" &&
+          keys.length >= 2 &&
+          value &&
+          typeof value === "string"
+        ) {
+          const keybinds =
+            ((newConfig as unknown as Record<string, unknown>)
+              .keybinds as Record<string, unknown>) || {};
+          if (!(newConfig as unknown as Record<string, unknown>).keybinds) {
+            (newConfig as unknown as Record<string, unknown>).keybinds =
+              keybinds;
           }
-          current = current[key] as Record<string, unknown>;
-        }
+          const hasLeaderKey =
+            keybinds.leader !== undefined && keybinds.leader !== "";
+          const isLeaderUpdate = String(keys[1]) === "leader";
+          let processedValue = value;
 
-        const finalKey = keys[keys.length - 1];
-        current[finalKey] = value;
+          if (!hasLeaderKey && !isLeaderUpdate) {
+            keybinds.leader = "ctrl+x";
+            processedValue = processedValue.split("ctrl+x").join("<leader>");
+          } else if (hasLeaderKey && !isLeaderUpdate) {
+            processedValue = processedValue
+              .split(String(keybinds.leader))
+              .join("<leader>");
+          }
+
+          let current: Record<string, unknown> = newConfig;
+          for (let i = 0; i < keys.length - 1; i++) {
+            const key = keys[i];
+            if (!(key in current) || current[key] === undefined) {
+              current[key] = {};
+            }
+            current = current[key] as Record<string, unknown>;
+          }
+
+          const finalKey = keys[keys.length - 1];
+          current[finalKey] = processedValue;
+        } else {
+          let current: Record<string, unknown> = newConfig;
+
+          for (let i = 0; i < keys.length - 1; i++) {
+            const key = keys[i];
+            if (!(key in current) || current[key] === undefined) {
+              current[key] = {};
+            }
+            current = current[key] as Record<string, unknown>;
+          }
+
+          const finalKey = keys[keys.length - 1];
+          current[finalKey] = value;
+        }
 
         return newConfig;
       });
