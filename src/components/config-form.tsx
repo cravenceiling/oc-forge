@@ -26,9 +26,15 @@ interface ConfigFormProps {
   schema: ConfigSchema;
   config: Properties;
   onUpdate: (path: readonly PropertyKey[], value: PropertyValue) => void;
+  themes: { name: string }[];
 }
 
-export function ConfigForm({ schema, config, onUpdate }: ConfigFormProps) {
+export function ConfigForm({
+  schema,
+  config,
+  onUpdate,
+  themes,
+}: ConfigFormProps) {
   const properties = schema.properties;
 
   return (
@@ -47,6 +53,7 @@ export function ConfigForm({ schema, config, onUpdate }: ConfigFormProps) {
             path={[k]}
             onUpdate={onUpdate}
             rootConfig={config}
+            themes={themes}
           />
         );
       })}
@@ -62,6 +69,7 @@ interface PropertySectionProps {
   onUpdate: (path: readonly PropertyKey[], value: PropertyValue) => void;
   level?: number;
   rootConfig: Properties;
+  themes: { name: string }[];
 }
 
 function PropertySection({
@@ -72,6 +80,7 @@ function PropertySection({
   onUpdate,
   level = 0,
   rootConfig,
+  themes,
 }: PropertySectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -115,6 +124,7 @@ function PropertySection({
                   onUpdate={onUpdate}
                   level={level + 1}
                   rootConfig={rootConfig}
+                  themes={themes}
                 />
               );
             })}
@@ -142,6 +152,7 @@ function PropertySection({
                 onUpdate={onUpdate}
                 level={level + 1}
                 rootConfig={rootConfig}
+                themes={themes}
               />
             ),
           )}
@@ -158,6 +169,7 @@ function PropertySection({
       path={path}
       onUpdate={onUpdate}
       rootConfig={rootConfig}
+      themes={themes}
     />
   );
 }
@@ -169,6 +181,7 @@ interface PropertyInputProps {
   path: readonly PropertyKey[];
   onUpdate: (path: readonly PropertyKey[], value: PropertyValue) => void;
   rootConfig: Properties;
+  themes: { name: string }[];
 }
 
 function PropertyInput({
@@ -178,6 +191,7 @@ function PropertyInput({
   path,
   onUpdate,
   rootConfig,
+  themes,
 }: PropertyInputProps) {
   const [localValue, setLocalValue] = useState(
     value === undefined || value === null ? "" : String(value),
@@ -240,6 +254,32 @@ function PropertyInput({
             handleChange(checked as PropertyValue)
           }
         />
+      </div>
+    );
+  }
+
+  // Theme type (special case for theme name)
+  if (name === "theme" && themes.length > 0) {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={path.join(".")} className="text-sm capitalize">
+          {name}
+        </Label>
+        {"description" in schema && schema.description && (
+          <p className="text-xs text-muted-foreground">{schema.description}</p>
+        )}
+        <Select value={(value as string) || ""} onValueChange={handleChange}>
+          <SelectTrigger id={path.join(".")}>
+            <SelectValue placeholder="Select a theme" />
+          </SelectTrigger>
+          <SelectContent>
+            {themes.map((theme) => (
+              <SelectItem key={theme.name} value={theme.name}>
+                {theme.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     );
   }
@@ -319,9 +359,9 @@ function PropertyInput({
             handleChange(
               val
                 ? val
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean)
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean)
                 : undefined,
             );
           }}
@@ -361,6 +401,7 @@ function PropertyInput({
   }
 
   // String type (default) with debouncing
+
   return (
     <div className="space-y-2">
       <Label htmlFor={path.join(".")} className="text-sm capitalize">

@@ -28,8 +28,10 @@ function deepClone<T>(obj: T): T {
 
 export default function ConfigGeneratorPage({
   schema,
+  themes,
 }: {
   schema: ConfigSchema;
+  themes: { name: string }[];
 }) {
   const schemaUrl = "https://opencode.ai/config.json";
   const [config, setConfig] = useState<Properties>({
@@ -86,7 +88,12 @@ export default function ConfigGeneratorPage({
     <div id="config-section" className="w-full h-screen">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
         <div className="bg-[#1A1818] border border-border rounded-lg p-6 overflow-y-auto">
-          <ConfigForm schema={schema} config={config} onUpdate={updateConfig} />
+          <ConfigForm
+            schema={schema}
+            config={config}
+            onUpdate={updateConfig}
+            themes={themes}
+          />
         </div>
         <div className="bg-[#1A1818] border border-border rounded-lg p-6 overflow-y-auto">
           <ConfigPreview config={config} />

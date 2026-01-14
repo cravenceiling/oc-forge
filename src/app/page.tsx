@@ -1,11 +1,13 @@
 import { GithubBadge } from "@/components/github-badge";
 import { ModeToggle } from "@/components/theme-toggle";
+import { fetchThemes } from "@/lib/data/github";
 import { getConfigSchema } from "@/lib/schema";
 import HeroSection from "./components/hero-section";
 import Home from "./components/home";
 
 export default async function Page() {
   const schema = getConfigSchema();
+  const themes = await fetchThemes();
 
   return (
     <div className="min-h-screen bg-background">
@@ -21,7 +23,7 @@ export default async function Page() {
         </div>
       </header>
       <HeroSection />
-      <Home schema={schema} />
+      <Home schema={schema} themes={themes} />
     </div>
   );
 }
