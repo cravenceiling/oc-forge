@@ -1,0 +1,388 @@
+"use client";
+
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { KeybindDialog } from "@/components/keybind-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import type {
+  ConfigSchema,
+  Properties,
+  PropertyKey,
+  PropertySchema,
+  PropertyValue,
+} from "@/lib/schema";
+
+interface ConfigFormProps {
+  schema: ConfigSchema;
+  config: Properties;
+  onUpdate: (path: readonly PropertyKey[], value: PropertyValue) => void;
+}
+
+export function ConfigForm({ schema, config, onUpdate }: ConfigFormProps) {
+  const properties = schema.properties;
+
+  return (
+    <div className="space-y-6">
+      {Object.entries(properties).map(([key, property]) => {
+        const k = key as PropertyKey;
+        const value = config[k] as PropertyValue;
+        const propertySchema: PropertySchema = property;
+
+        return (
+          <PropertySection
+            key={key}
+            name={key}
+            schema={propertySchema}
+            value={value}
+            path={[k]}
+            onUpdate={onUpdate}
+            rootConfig={config}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+interface PropertySectionProps {
+  name: string;
+  schema: PropertySchema;
+  value: PropertyValue;
+  path: readonly PropertyKey[];
+  onUpdate: (path: readonly PropertyKey[], value: PropertyValue) => void;
+  level?: number;
+  rootConfig: Properties;
+}
+
+function PropertySection({
+  name,
+  schema,
+  value,
+  path,
+  onUpdate,
+  level = 0,
+  rootConfig,
+}: PropertySectionProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const isSection =
+    level === 0 && "properties" in schema && !!schema.properties;
+
+  if (isSection) {
+    return (
+      <div className="border border-border rounded-lg overflow-hidden bg-card">
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full px-5 py-4 flex items-center justify-between bg-muted/30 hover:bg-muted/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            {isExpanded ? (
+              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            )}
+            <div className="text-left">
+              <h3 className="font-semibold text-foreground capitalize">
+                {name}
+              </h3>
+            </div>
+          </div>
+        </button>
+        {isExpanded && (
+          <div className="p-5 space-y-4">
+            {Object.entries(schema.properties).map(([key, propSchema]) => {
+              const val = (value as Properties)?.[
+                key as PropertyKey
+              ] as PropertyValue;
+              return (
+                <PropertySection
+                  key={key}
+                  name={key}
+                  schema={propSchema}
+                  value={val}
+                  path={[...path, key as PropertyKey]}
+                  onUpdate={onUpdate}
+                  level={level + 1}
+                  rootConfig={rootConfig}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if ("properties" in schema && !!schema.properties && level > 0) {
+    return (
+      <div className="space-y-3">
+        <Label className="text-sm font-medium capitalize">{name}</Label>
+        <div className="pl-4 border-l-2 border-border space-y-3">
+          {Object.entries(schema.properties).map(
+            ([key, propSchema]: [string, PropertySchema]) => (
+              <PropertySection
+                key={key}
+                name={key}
+                schema={propSchema}
+                value={
+                  (value as Properties)?.[key as PropertyKey] as PropertyValue
+                }
+                path={[...path, key as PropertyKey]}
+                onUpdate={onUpdate}
+                level={level + 1}
+                rootConfig={rootConfig}
+              />
+            ),
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <PropertyInput
+      name={name}
+      schema={schema}
+      value={value}
+      path={path}
+      onUpdate={onUpdate}
+      rootConfig={rootConfig}
+    />
+  );
+}
+
+interface PropertyInputProps {
+  name: string;
+  schema: PropertySchema;
+  value: PropertyValue;
+  path: readonly PropertyKey[];
+  onUpdate: (path: readonly PropertyKey[], value: PropertyValue) => void;
+  rootConfig: Properties;
+}
+
+function PropertyInput({
+  name,
+  schema,
+  value,
+  path,
+  onUpdate,
+  rootConfig,
+}: PropertyInputProps) {
+  const [localValue, setLocalValue] = useState(
+    value === undefined || value === null ? "" : String(value),
+  );
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pathRef = useRef(path);
+  pathRef.current = path;
+
+  useEffect(() => {
+    if (value === undefined || value === null) {
+      setLocalValue("");
+    } else if (typeof value === "boolean") {
+      setLocalValue("");
+    } else {
+      setLocalValue(String(value));
+    }
+  }, [value]);
+
+  const debouncedUpdate = useCallback(
+    (newValue: PropertyValue) => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      debounceTimerRef.current = setTimeout(() => {
+        onUpdate(pathRef.current, newValue);
+      }, 300);
+    },
+    [onUpdate],
+  );
+
+  const handleChange = useCallback(
+    (newValue: PropertyValue) => {
+      onUpdate(pathRef.current, newValue);
+    },
+    [onUpdate],
+  );
+
+  const isKeybind = path.length >= 2 && path[0] === "keybinds";
+  const isLeaderKey = isKeybind && name === "leader";
+
+  // Boolean type
+  if ("type" in schema && schema.type === "boolean") {
+    return (
+      <div className="flex items-center justify-between">
+        <div>
+          <Label htmlFor={path.join(".")} className="text-sm capitalize">
+            {name}
+          </Label>
+          {"description" in schema && schema.description && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {schema.description}
+            </p>
+          )}
+        </div>
+        <Switch
+          id={path.join(".")}
+          checked={(value as boolean) || false}
+          onCheckedChange={(checked: boolean) =>
+            handleChange(checked as PropertyValue)
+          }
+        />
+      </div>
+    );
+  }
+
+  // Enum type
+  if ("enum" in schema && schema.enum) {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={path.join(".")} className="text-sm capitalize">
+          {name}
+        </Label>
+        {"description" in schema && schema.description && (
+          <p className="text-xs text-muted-foreground">{schema.description}</p>
+        )}
+        <Select value={(value as string) || ""} onValueChange={handleChange}>
+          <SelectTrigger id={path.join(".")}>
+            <SelectValue placeholder="Select an option" />
+          </SelectTrigger>
+          <SelectContent>
+            {schema.enum.map((option: string) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  }
+
+  // Number type
+  if (
+    "type" in schema &&
+    (schema.type === "number" || schema.type === "integer")
+  ) {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={path.join(".")} className="text-sm capitalize">
+          {name}
+        </Label>
+        {"description" in schema && schema.description && (
+          <p className="text-xs text-muted-foreground">{schema.description}</p>
+        )}
+        <Input
+          id={path.join(".")}
+          type="number"
+          value={typeof value === "number" ? value : ""}
+          onChange={(e) => {
+            const val = e.target.value;
+            handleChange(val === "" ? undefined : Number(val));
+          }}
+          placeholder={
+            "default" in schema && schema.default
+              ? schema.default.toString()
+              : ""
+          }
+        />
+      </div>
+    );
+  }
+
+  // Array type
+  if ("type" in schema && schema.type === "array") {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={path.join(".")} className="text-sm capitalize">
+          {name}
+        </Label>
+        {"description" in schema && schema.description && (
+          <p className="text-xs text-muted-foreground">{schema.description}</p>
+        )}
+        <Textarea
+          id={path.join(".")}
+          value={Array.isArray(value) ? (value as string[]).join(", ") : ""}
+          onChange={(e) => {
+            const val = e.target.value;
+            handleChange(
+              val
+                ? val
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+                : undefined,
+            );
+          }}
+          placeholder="Enter values separated by commas"
+          rows={3}
+        />
+      </div>
+    );
+  }
+
+  if (isKeybind) {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={path.join(".")} className="text-sm capitalize">
+          {name}
+        </Label>
+        {"description" in schema && schema.description && (
+          <p className="text-xs text-muted-foreground">{schema.description}</p>
+        )}
+        <KeybindDialog
+          value={(value as string) || ""}
+          defaultValue={
+            "default" in schema && schema.default
+              ? (schema.default as string)
+              : ""
+          }
+          onChange={handleChange}
+          leaderKey={
+            ((rootConfig.keybinds as Record<string, unknown>)
+              ?.leader as string) || ""
+          }
+          fieldName={name}
+          isLeaderField={isLeaderKey}
+        />
+      </div>
+    );
+  }
+
+  // String type (default) with debouncing
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={path.join(".")} className="text-sm capitalize">
+        {name}
+      </Label>
+      {"description" in schema && schema.description && (
+        <p className="text-xs text-muted-foreground">{schema.description}</p>
+      )}
+      <Input
+        id={path.join(".")}
+        type="text"
+        value={localValue}
+        onChange={(e) => {
+          setLocalValue(e.target.value);
+          debouncedUpdate(e.target.value);
+        }}
+        placeholder={
+          "default" in schema && schema.default
+            ? String(schema.default)
+            : undefined
+        }
+      />
+    </div>
+  );
+}
