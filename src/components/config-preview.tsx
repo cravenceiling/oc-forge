@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Copy, Download } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { Properties } from "@/lib/schema";
 
@@ -16,6 +16,10 @@ export function ConfigPreview({ config, onUpdate }: ConfigPreviewProps) {
     JSON.stringify(config, null, 2),
   );
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setEditValue(JSON.stringify(config, null, 2));
+  }, [config]);
 
   const _configJson = JSON.stringify(config, null, 2);
 
