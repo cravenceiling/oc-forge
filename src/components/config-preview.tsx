@@ -62,8 +62,8 @@ export function ConfigPreview({ config }: { config: Properties }) {
           </Button>
         </div>
       </div>
-      <div className="flex-1 overflow-auto p-6">
-        <pre className="text-sm font-mono bg-card border border-border rounded-lg p-4 text-foreground">
+      <div className="flex-1 overflow-auto p-4 lg:p-6">
+        <pre className="text-sm font-mono bg-card border border-border rounded-lg p-4 text-foreground overflow-x-auto whitespace-pre-wrap break-all max-w-full">
           {configJson || "{}"}
         </pre>
       </div>

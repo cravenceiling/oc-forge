@@ -126,9 +126,9 @@ export default function ConfigGeneratorPage({
   );
 
   return (
-    <div id="config-section" className="w-full h-screen">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-        <div className="bg-[#1A1818] border border-border rounded-lg p-6 overflow-y-auto">
+    <div id="config-section" className="w-full min-h-screen">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 p-4 lg:p-6 h-auto lg:h-screen">
+        <div className="bg-[#1A1818] border border-border rounded-lg p-4 lg:p-6 overflow-y-auto max-h-[50vh] lg:max-h-none">
           <ConfigForm
             schema={schema}
             config={config}
@@ -136,7 +136,7 @@ export default function ConfigGeneratorPage({
             themes={themes}
           />
         </div>
-        <div className="bg-[#1A1818] border border-border rounded-lg p-6 overflow-y-auto">
+        <div className="bg-[#1A1818] border border-border rounded-lg p-4 lg:p-6 overflow-hidden flex flex-col max-h-[50vh] lg:max-h-none">
           <ConfigPreview config={config} />
         </div>
       </div>
