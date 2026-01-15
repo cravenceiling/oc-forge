@@ -137,7 +137,7 @@ export default function ConfigGeneratorPage({
           />
         </div>
         <div className="bg-[#1A1818] border border-border rounded-lg p-4 lg:p-6 overflow-hidden flex flex-col max-h-[50vh] lg:max-h-none">
-          <ConfigPreview config={config} />
+          <ConfigPreview config={config} onUpdate={setConfig} />
         </div>
       </div>
     </div>

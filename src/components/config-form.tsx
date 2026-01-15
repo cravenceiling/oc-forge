@@ -242,7 +242,7 @@ function PropertyInput({
             {name}
           </Label>
           {"description" in schema && schema.description && (
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               {schema.description}
             </p>
           )}
@@ -266,7 +266,7 @@ function PropertyInput({
           {name}
         </Label>
         {"description" in schema && schema.description && (
-          <p className="text-xs text-muted-foreground">{schema.description}</p>
+          <p className="text-sm text-muted-foreground">{schema.description}</p>
         )}
         <Select value={(value as string) || ""} onValueChange={handleChange}>
           <SelectTrigger id={path.join(".")}>
@@ -292,7 +292,7 @@ function PropertyInput({
           {name}
         </Label>
         {"description" in schema && schema.description && (
-          <p className="text-xs text-muted-foreground">{schema.description}</p>
+          <p className="text-sm text-muted-foreground">{schema.description}</p>
         )}
         <Select value={(value as string) || ""} onValueChange={handleChange}>
           <SelectTrigger id={path.join(".")}>
@@ -321,7 +321,7 @@ function PropertyInput({
           {name}
         </Label>
         {"description" in schema && schema.description && (
-          <p className="text-xs text-muted-foreground">{schema.description}</p>
+          <p className="text-sm text-muted-foreground">{schema.description}</p>
         )}
         <Input
           id={path.join(".")}
@@ -349,7 +349,7 @@ function PropertyInput({
           {name}
         </Label>
         {"description" in schema && schema.description && (
-          <p className="text-xs text-muted-foreground">{schema.description}</p>
+          <p className="text-sm text-muted-foreground">{schema.description}</p>
         )}
         <Textarea
           id={path.join(".")}
@@ -379,7 +379,7 @@ function PropertyInput({
           {name}
         </Label>
         {"description" in schema && schema.description && (
-          <p className="text-xs text-muted-foreground">{schema.description}</p>
+          <p className="text-sm text-muted-foreground">{schema.description}</p>
         )}
         <KeybindDialog
           value={(value as string) || ""}
@@ -408,7 +408,7 @@ function PropertyInput({
         {name}
       </Label>
       {"description" in schema && schema.description && (
-        <p className="text-xs text-muted-foreground">{schema.description}</p>
+        <p className="text-sm text-muted-foreground">{schema.description}</p>
       )}
       <Input
         id={path.join(".")}

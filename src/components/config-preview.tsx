@@ -5,19 +5,28 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { Properties } from "@/lib/schema";
 
-export function ConfigPreview({ config }: { config: Properties }) {
-  const [copied, setCopied] = useState(false);
+interface ConfigPreviewProps {
+  config: Properties;
+  onUpdate?: (config: Properties) => void;
+}
 
-  const configJson = JSON.stringify(config, null, 2);
+export function ConfigPreview({ config, onUpdate }: ConfigPreviewProps) {
+  const [copied, setCopied] = useState(false);
+  const [editValue, setEditValue] = useState(() =>
+    JSON.stringify(config, null, 2),
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  const _configJson = JSON.stringify(config, null, 2);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(configJson);
+    await navigator.clipboard.writeText(editValue);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
-    const blob = new Blob([configJson], { type: "application/json" });
+    const blob = new Blob([editValue], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -26,6 +35,17 @@ export function ConfigPreview({ config }: { config: Properties }) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleChange = (value: string) => {
+    setEditValue(value);
+    try {
+      const parsed = JSON.parse(value);
+      setError(null);
+      onUpdate?.(parsed);
+    } catch {
+      setError("Invalid JSON");
+    }
   };
 
   return (
@@ -63,9 +83,13 @@ export function ConfigPreview({ config }: { config: Properties }) {
         </div>
       </div>
       <div className="flex-1 overflow-auto p-4 lg:p-6">
-        <pre className="text-sm font-mono bg-card border border-border rounded-lg p-4 text-foreground overflow-x-auto whitespace-pre-wrap break-all max-w-full">
-          {configJson || "{}"}
-        </pre>
+        <textarea
+          value={editValue}
+          onChange={(e) => handleChange(e.target.value)}
+          className="w-full h-full min-h-[300px] text-sm font-mono bg-card border border-border rounded-lg p-4 text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+          spellCheck={false}
+        />
+        {error && <p className="text-sm text-destructive mt-2">{error}</p>}
       </div>
     </div>
   );
