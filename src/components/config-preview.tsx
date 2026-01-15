@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Copy, Download } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { Properties } from "@/lib/schema";
 
@@ -10,7 +10,10 @@ interface ConfigPreviewProps {
   onUpdate?: (config: Properties) => void;
 }
 
-export function ConfigPreview({ config, onUpdate }: ConfigPreviewProps) {
+const ConfigPreview = memo(function ConfigPreview({
+  config,
+  onUpdate,
+}: ConfigPreviewProps) {
   const [copied, setCopied] = useState(false);
   const [editValue, setEditValue] = useState(() =>
     JSON.stringify(config, null, 2),
@@ -97,4 +100,6 @@ export function ConfigPreview({ config, onUpdate }: ConfigPreviewProps) {
       </div>
     </div>
   );
-}
+});
+
+export { ConfigPreview };

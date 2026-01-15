@@ -1,9 +1,20 @@
 "use client";
 
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { KeybindDialog } from "@/components/keybind-dialog";
+import dynamic from "next/dynamic";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
+
+const KeybindDialog = dynamic(
+  () =>
+    import("@/components/keybind-dialog").then((mod) => ({
+      default: mod.KeybindDialog,
+    })),
+  {
+    ssr: false,
+  },
+);
+
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -184,7 +195,7 @@ interface PropertyInputProps {
   themes: { name: string }[];
 }
 
-function PropertyInput({
+const PropertyInput = memo(function PropertyInput({
   name,
   schema,
   value,
@@ -426,4 +437,4 @@ function PropertyInput({
       />
     </div>
   );
-}
+});

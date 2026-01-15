@@ -1,5 +1,6 @@
 "use client";
 
+import { produce } from "immer";
 import { useCallback, useState } from "react";
 import { ConfigForm } from "@/components/config-form";
 import { ConfigPreview } from "@/components/config-preview";
@@ -10,21 +11,7 @@ import type {
   PropertyValue,
 } from "@/lib/schema";
 
-function deepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== "object") {
-    return obj;
-  }
-  if (Array.isArray(obj)) {
-    return obj.map((item) => deepClone(item)) as T;
-  }
-  const cloned: Record<string, unknown> = {};
-  for (const key in obj) {
-    if (Object.hasOwn(obj, key)) {
-      cloned[key] = deepClone((obj as Record<string, unknown>)[key]);
-    }
-  }
-  return cloned as T;
-}
+type NestedRecord = Record<string, unknown>;
 
 export default function ConfigGeneratorPage({
   schema,
@@ -40,87 +27,83 @@ export default function ConfigGeneratorPage({
 
   const updateConfig = useCallback(
     (path: readonly PropertyKey[], value: PropertyValue) => {
-      setConfig((prev) => {
-        const newConfig = deepClone(prev) as Properties;
+      setConfig((prev) =>
+        produce(prev, (draft) => {
+          if (
+            value === undefined ||
+            (Array.isArray(value) && value.length === 0)
+          ) {
+            const keys = [...path] as PropertyKey[];
+            let current: NestedRecord = draft as NestedRecord;
 
-        if (
-          value === undefined ||
-          (Array.isArray(value) && value.length === 0)
-        ) {
+            for (let i = 0; i < keys.length - 1; i++) {
+              const key = keys[i];
+              if (!(key in current) || current[key] === undefined) {
+                return;
+              }
+              current = current[key] as NestedRecord;
+            }
+
+            const lastKey = keys[keys.length - 1];
+            delete current[lastKey];
+            return;
+          }
+
           const keys = [...path] as PropertyKey[];
-          let current: Record<string, unknown> = newConfig;
 
-          for (let i = 0; i < keys.length - 1; i++) {
-            const key = keys[i];
-            if (!(key in current) || current[key] === undefined) {
-              return prev;
+          if (
+            String(keys[0]) === "keybinds" &&
+            keys.length >= 2 &&
+            value &&
+            typeof value === "string"
+          ) {
+            const keybinds =
+              ((draft as unknown as NestedRecord).keybinds as NestedRecord) ||
+              {};
+            if (!(draft as unknown as NestedRecord).keybinds) {
+              (draft as unknown as NestedRecord).keybinds = keybinds;
             }
-            current = current[key] as Record<string, unknown>;
-          }
+            const hasLeaderKey =
+              keybinds.leader !== undefined && keybinds.leader !== "";
+            const isLeaderUpdate = String(keys[1]) === "leader";
+            let processedValue = value;
 
-          const lastKey = keys[keys.length - 1];
-          delete current[lastKey];
-
-          return newConfig;
-        }
-
-        const keys = [...path] as PropertyKey[];
-
-        if (
-          String(keys[0]) === "keybinds" &&
-          keys.length >= 2 &&
-          value &&
-          typeof value === "string"
-        ) {
-          const keybinds =
-            ((newConfig as unknown as Record<string, unknown>)
-              .keybinds as Record<string, unknown>) || {};
-          if (!(newConfig as unknown as Record<string, unknown>).keybinds) {
-            (newConfig as unknown as Record<string, unknown>).keybinds =
-              keybinds;
-          }
-          const hasLeaderKey =
-            keybinds.leader !== undefined && keybinds.leader !== "";
-          const isLeaderUpdate = String(keys[1]) === "leader";
-          let processedValue = value;
-
-          if (!hasLeaderKey && !isLeaderUpdate) {
-            keybinds.leader = "ctrl+x";
-            processedValue = processedValue.split("ctrl+x").join("<leader>");
-          } else if (hasLeaderKey && !isLeaderUpdate) {
-            processedValue = processedValue
-              .split(String(keybinds.leader))
-              .join("<leader>");
-          }
-
-          let current: Record<string, unknown> = newConfig;
-          for (let i = 0; i < keys.length - 1; i++) {
-            const key = keys[i];
-            if (!(key in current) || current[key] === undefined) {
-              current[key] = {};
+            if (!hasLeaderKey && !isLeaderUpdate) {
+              keybinds.leader = "ctrl+x";
+              processedValue = processedValue.split("ctrl+x").join("<leader>");
+            } else if (hasLeaderKey && !isLeaderUpdate) {
+              processedValue = processedValue
+                .split(String(keybinds.leader))
+                .join("<leader>");
             }
-            current = current[key] as Record<string, unknown>;
-          }
 
-          const finalKey = keys[keys.length - 1];
-          current[finalKey] = processedValue;
-        } else {
-          let current: Record<string, unknown> = newConfig;
-
-          for (let i = 0; i < keys.length - 1; i++) {
-            const key = keys[i];
-            if (!(key in current) || current[key] === undefined) {
-              current[key] = {};
+            let current: NestedRecord = draft as NestedRecord;
+            for (let i = 0; i < keys.length - 1; i++) {
+              const key = keys[i];
+              if (!(key in current) || current[key] === undefined) {
+                current[key] = {};
+              }
+              current = current[key] as NestedRecord;
             }
-            current = current[key] as Record<string, unknown>;
+
+            const finalKey = keys[keys.length - 1];
+            current[finalKey] = processedValue;
+          } else {
+            let current: NestedRecord = draft as NestedRecord;
+
+            for (let i = 0; i < keys.length - 1; i++) {
+              const key = keys[i];
+              if (!(key in current) || current[key] === undefined) {
+                current[key] = {};
+              }
+              current = current[key] as NestedRecord;
+            }
+
+            const finalKey = keys[keys.length - 1];
+            current[finalKey] = value;
           }
-
-          const finalKey = keys[keys.length - 1];
-          current[finalKey] = value;
-        }
-
-        return newConfig;
-      });
+        }),
+      );
     },
     [],
   );
