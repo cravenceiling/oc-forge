@@ -54,22 +54,30 @@ export default function HeroSection() {
     <section className="min-h-screen flex flex-col items-center justify-center text-center pb-16">
       <div className="flex flex-col items-center px-6">
         <div className="max-w-2xl text-center mb-8">
-          <h1>
+          <div>
             <pre className="font-mono text-[12px] leading-none whitespace-pre select-none mb-4">
               <code>{title}</code>
             </pre>
             <pre className="leading-tight text-[6px]">
               <code>{asciiForge}</code>
             </pre>
-          </h1>
+          </div>
 
           <h2 className="mb-6">
             Config Builder for{" "}
             <span className="underline">
-              <a href={opencodeGithubLink}>opencode</a>
+              <a
+                href={opencodeGithubLink}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                opencode
+              </a>
             </span>
           </h2>
-          <Button onClick={handleScrollToConfig}>Create Config</Button>
+          <Button onClick={handleScrollToConfig} aria-label="Create Config">
+            Create Config
+          </Button>
         </div>
       </div>
     </section>

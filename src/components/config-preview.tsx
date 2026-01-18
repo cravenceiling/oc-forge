@@ -93,6 +93,7 @@ const ConfigPreview = memo(function ConfigPreview({
         <textarea
           value={editValue}
           onChange={(e) => handleChange(e.target.value)}
+          aria-label="Configuration JSON preview"
           className="w-full h-full min-h-[300px] text-sm font-mono bg-card border border-border rounded-lg p-4 text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring"
           spellCheck={false}
         />

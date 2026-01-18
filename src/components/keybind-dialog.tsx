@@ -1,7 +1,7 @@
 "use client";
 
 import { Keyboard, X } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,6 +35,8 @@ export function KeybindDialog({
   const [activeModifiers, setActiveModifiers] = useState<Set<string>>(
     new Set(),
   );
+  const activeModifiersRef = useRef(activeModifiers);
+  activeModifiersRef.current = activeModifiers;
 
   const displayValue = useCallback(() => {
     const actualValue = value || defaultValue || "";
@@ -73,7 +75,9 @@ export function KeybindDialog({
       if (MODIFIER_KEYS.has(key)) {
         setActiveModifiers((prev) => new Set(prev).add(MODIFIER_MAP[key]));
       } else {
-        const modifiers = Array.from(activeModifiers).sort().join("+");
+        const modifiers = Array.from(activeModifiersRef.current)
+          .sort()
+          .join("+");
         const mainKey = key.toLowerCase();
         const combination = modifiers ? `${modifiers}+${mainKey}` : mainKey;
 
@@ -102,7 +106,7 @@ export function KeybindDialog({
       window.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener("keyup", handleKeyUp, true);
     };
-  }, [isCapturing, activeModifiers]);
+  }, [isCapturing]);
 
   const startCapture = () => {
     setCapturedKeys([]);

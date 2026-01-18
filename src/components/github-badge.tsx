@@ -10,6 +10,7 @@ export function GithubBadge() {
         href="https://github.com/cravenceiling/oc-forge"
         prefetch={false}
         target="_blank"
+        rel="noopener noreferrer"
       >
         GitHub
         <svg viewBox="0 0 438.549 438.549">

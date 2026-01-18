@@ -2,7 +2,7 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 
 const KeybindDialog = dynamic(
@@ -48,9 +48,14 @@ export function ConfigForm({
 }: ConfigFormProps) {
   const properties = schema.properties;
 
+  const propertyEntries = useMemo(
+    () => Object.entries(properties),
+    [properties],
+  );
+
   return (
     <div className="space-y-6">
-      {Object.entries(properties).map(([key, property]) => {
+      {propertyEntries.map(([key, property]) => {
         const k = key as PropertyKey;
         const value = config[k] as PropertyValue;
         const propertySchema: PropertySchema = property;
@@ -96,7 +101,15 @@ function PropertySection({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const isSection =
-    level === 0 && "properties" in schema && !!schema.properties;
+    level === 0 &&
+    "properties" in schema &&
+    !!(schema as { properties?: object }).properties;
+
+  const nestedEntries = useMemo(() => {
+    const props = (schema as { properties?: Record<string, PropertySchema> })
+      .properties;
+    return props ? Object.entries(props) : [];
+  }, [schema]);
 
   if (isSection) {
     return (
@@ -121,7 +134,7 @@ function PropertySection({
         </button>
         {isExpanded && (
           <div className="p-5 space-y-4">
-            {Object.entries(schema.properties).map(([key, propSchema]) => {
+            {nestedEntries.map(([key, propSchema]) => {
               const val = (value as Properties)?.[
                 key as PropertyKey
               ] as PropertyValue;
@@ -141,33 +154,6 @@ function PropertySection({
             })}
           </div>
         )}
-      </div>
-    );
-  }
-
-  if ("properties" in schema && !!schema.properties && level > 0) {
-    return (
-      <div className="space-y-3">
-        <Label className="text-sm font-medium capitalize">{name}</Label>
-        <div className="pl-4 border-l-2 border-border space-y-3">
-          {Object.entries(schema.properties).map(
-            ([key, propSchema]: [string, PropertySchema]) => (
-              <PropertySection
-                key={key}
-                name={key}
-                schema={propSchema}
-                value={
-                  (value as Properties)?.[key as PropertyKey] as PropertyValue
-                }
-                path={[...path, key as PropertyKey]}
-                onUpdate={onUpdate}
-                level={level + 1}
-                rootConfig={rootConfig}
-                themes={themes}
-              />
-            ),
-          )}
-        </div>
       </div>
     );
   }
@@ -260,6 +246,7 @@ const PropertyInput = memo(function PropertyInput({
         </div>
         <Switch
           id={path.join(".")}
+          aria-label={name}
           checked={(value as boolean) || false}
           onCheckedChange={(checked: boolean) =>
             handleChange(checked as PropertyValue)
