@@ -44,6 +44,33 @@ export type PropertyKey = keyof typeof configSchema.properties;
 
 export type PropertySchema = (typeof configSchema.properties)[PropertyKey];
 
+export type DynamicPropertySchema = PropertySchema & {
+  additionalProperties: PropertySchema | boolean | object;
+};
+
+export function hasAdditionalProperties(
+  schema: PropertySchema,
+): schema is DynamicPropertySchema {
+  return (
+    "additionalProperties" in schema &&
+    schema.additionalProperties !== undefined &&
+    schema.additionalProperties !== false
+  );
+}
+
+export function getAdditionalPropertiesSchema(
+  schema: DynamicPropertySchema,
+): PropertySchema | object | undefined {
+  const additionalProps = schema.additionalProperties;
+  if (additionalProps === true) {
+    return { type: "string" };
+  }
+  if (typeof additionalProps === "object") {
+    return additionalProps;
+  }
+  return undefined;
+}
+
 export function getConfigSchema() {
   return configSchema;
 }

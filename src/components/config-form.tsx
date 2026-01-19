@@ -15,6 +15,7 @@ const KeybindDialog = dynamic(
   },
 );
 
+import { DynamicObjectEditor } from "@/components/dynamic-object-editor";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -230,6 +231,26 @@ const PropertyInput = memo(function PropertyInput({
   const isKeybind = path.length >= 2 && path[0] === "keybinds";
   const isLeaderKey = isKeybind && name === "leader";
 
+  if (
+    "type" in schema &&
+    schema.type === "object" &&
+    "additionalProperties" in schema &&
+    schema.additionalProperties !== false &&
+    schema.additionalProperties !== undefined
+  ) {
+    return (
+      <DynamicObjectEditor
+        name={name}
+        schema={schema}
+        value={value as Record<string, PropertyValue>}
+        path={path}
+        onUpdate={onUpdate}
+        rootConfig={rootConfig}
+        themes={themes}
+      />
+    );
+  }
+
   // Boolean type
   if ("type" in schema && schema.type === "boolean") {
     return (
@@ -425,3 +446,6 @@ const PropertyInput = memo(function PropertyInput({
     </div>
   );
 });
+
+export type { PropertyInputProps };
+export { PropertyInput };
