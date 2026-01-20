@@ -15,7 +15,7 @@ import type {
   PropertySchema,
   PropertyValue,
 } from "@/lib/schema";
-import { PropertyInput } from "./config-form";
+import { PropertyInput } from "./property-input";
 
 interface KeyValuePairProps {
   keyName: string;

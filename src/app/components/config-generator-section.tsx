@@ -13,7 +13,7 @@ import type {
 
 type NestedRecord = Record<string, unknown>;
 
-export default function ConfigGeneratorPage({
+export default function ConfigGeneratorSection({
   schema,
   themes,
 }: {
