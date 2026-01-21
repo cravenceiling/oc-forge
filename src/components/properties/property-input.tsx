@@ -8,22 +8,22 @@ import type {
   PropertySchema,
   PropertyValue,
 } from "@/lib/schema";
-import { DynamicObjectEditor } from "./dynamic-object-editor";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { Switch } from "./ui/switch";
-import { Textarea } from "./ui/textarea";
+} from "../ui/select";
+import { Switch } from "../ui/switch";
+import { Textarea } from "../ui/textarea";
+import { DynamicObjectEditor } from "./dynamic-object-editor";
 
 const KeybindDialog = dynamic(
   () =>
-    import("@/components/keybind-dialog").then((mod) => ({
+    import("@/components/dialogs/keybind-dialog").then((mod) => ({
       default: mod.KeybindDialog,
     })),
   {

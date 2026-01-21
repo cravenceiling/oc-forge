@@ -2,8 +2,13 @@
 
 import { produce } from "immer";
 import { useCallback, useState } from "react";
-import { ConfigForm } from "@/components/config-form";
-import { ConfigPreview } from "@/components/config-preview";
+import { ConfigForm } from "@/components/config/config-form";
+import { ConfigPreview } from "@/components/config/config-preview";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import type {
   ConfigSchema,
   Properties,
@@ -109,20 +114,21 @@ export default function ConfigGeneratorSection({
   );
 
   return (
-    <div id="config-section" className="w-full min-h-screen">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 p-4 lg:p-6 h-auto lg:h-screen">
-        <div className="bg-[#1A1818] border border-border rounded-lg p-4 lg:p-6 overflow-y-auto max-h-[50vh] lg:max-h-none">
-          <ConfigForm
-            schema={schema}
-            config={config}
-            onUpdate={updateConfig}
-            themes={themes}
-          />
-        </div>
-        <div className="bg-[#1A1818] border border-border rounded-lg p-4 lg:p-6 overflow-hidden flex flex-col max-h-[50vh] lg:max-h-none">
-          <ConfigPreview config={config} onUpdate={setConfig} />
-        </div>
-      </div>
-    </div>
+    <ResizablePanelGroup className="flex h-full min-h-0 flex-col md:flex-row overflow-hidden">
+      <ResizablePanel className="flex-1 min-h-0 bg-[#1A1818] p-4 overflow-auto">
+        <ConfigForm
+          schema={schema}
+          config={config}
+          onUpdate={updateConfig}
+          themes={themes}
+        />
+      </ResizablePanel>
+
+      <ResizableHandle withHandle className="hidden md:flex" />
+
+      <ResizablePanel className="flex-1 min-h-0 bg-[#1A1818] p-2 overflow-auto">
+        <ConfigPreview config={config} onUpdate={setConfig} />
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 }

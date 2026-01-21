@@ -9,7 +9,7 @@ import type {
   PropertySchema,
   PropertyValue,
 } from "@/lib/schema";
-import PropertySection from "./property-section";
+import PropertySection from "../properties/property-section";
 
 interface ConfigFormProps {
   schema: ConfigSchema;

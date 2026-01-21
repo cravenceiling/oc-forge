@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const title = `
@@ -40,18 +41,8 @@ const asciiForge = `
 const opencodeGithubLink = "https://github.com/anomalyco/opencode";
 
 export default function HeroSection() {
-  const handleScrollToConfig = () => {
-    const configSection = document.getElementById("config-section");
-    if (configSection) {
-      window.scrollTo({
-        top: configSection.offsetTop,
-        behavior: "smooth",
-      });
-    }
-  };
-
   return (
-    <section className="min-h-screen flex flex-col items-center justify-center text-center pb-16">
+    <section className="flex flex-col items-center justify-center text-center mt-4">
       <div className="flex flex-col items-center px-6">
         <div className="max-w-2xl text-center mb-8">
           <div>
@@ -63,7 +54,7 @@ export default function HeroSection() {
             </pre>
           </div>
 
-          <h2 className="mb-6">
+          <h2 className="my-2 mb-4">
             Config Builder for{" "}
             <span className="underline">
               <a
@@ -75,9 +66,9 @@ export default function HeroSection() {
               </a>
             </span>
           </h2>
-          <Button onClick={handleScrollToConfig} aria-label="Create Config">
-            Create Config
-          </Button>
+          <Link href="/config-editor" prefetch={true}>
+            <Button>Open Config Editor</Button>
+          </Link>
         </div>
       </div>
     </section>

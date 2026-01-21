@@ -1,7 +1,7 @@
 "use client";
 
 import { Keyboard, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,14 +38,14 @@ export function KeybindDialog({
   const activeModifiersRef = useRef(activeModifiers);
   activeModifiersRef.current = activeModifiers;
 
-  const displayValue = useCallback(() => {
+  const displayValue = useMemo(() => {
     const actualValue = value || defaultValue || "";
     if (!actualValue || isLeaderField) return actualValue;
     if (!leaderKey) return actualValue;
     const normalizedLeader = leaderKey.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const regex = new RegExp(`${normalizedLeader},`, "g");
     return actualValue.replace(regex, "<leader>");
-  }, [value, defaultValue, leaderKey, isLeaderField])();
+  }, [value, defaultValue, leaderKey, isLeaderField]);
 
   useEffect(() => {
     if (!open) {

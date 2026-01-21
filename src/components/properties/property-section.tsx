@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import type {
   Properties,
   PropertyKey,
@@ -19,7 +19,7 @@ interface PropertySectionProps {
   themes: { name: string }[];
 }
 
-export default function PropertySection({
+const PropertySection = memo(function PropertySection({
   name,
   schema,
   value,
@@ -48,7 +48,7 @@ export default function PropertySection({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full px-5 py-4 flex items-center justify-between bg-muted/30 hover:bg-muted/50 transition-colors"
+          className="w-full p-2 flex items-center justify-between bg-muted/30 hover:bg-muted/50 transition-colors"
         >
           <div className="flex items-center gap-3">
             {isExpanded ? (
@@ -57,9 +57,7 @@ export default function PropertySection({
               <ChevronRight className="h-5 w-5 text-muted-foreground" />
             )}
             <div className="text-left">
-              <h3 className="font-semibold text-foreground capitalize">
-                {name}
-              </h3>
+              <h3 className="font-light text-foreground">{name}</h3>
             </div>
           </div>
         </button>
@@ -100,4 +98,6 @@ export default function PropertySection({
       themes={themes}
     />
   );
-}
+});
+
+export default PropertySection;

@@ -6,11 +6,9 @@ type OnePropertyUnion<T> = {
 
 export const configSchema = rawSchema;
 
-/*
-export type ConfigSchema =
-  Required<Pick<typeof configSchema, AlwaysDefined>> &
-  Partial<Omit<typeof configSchema, AlwaysDefined>>;
-*/
+export function getConfigSchema() {
+  return configSchema;
+}
 
 export type ConfigSchema = typeof configSchema;
 
@@ -69,10 +67,6 @@ export function getAdditionalPropertiesSchema(
     return additionalProps;
   }
   return undefined;
-}
-
-export function getConfigSchema() {
-  return configSchema;
 }
 
 type ResolvePrimitive<T> = T extends "string" | string

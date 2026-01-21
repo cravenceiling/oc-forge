@@ -2,7 +2,7 @@
 
 import { Check, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { KeyValuePair } from "@/components/key-value-pair";
+import { KeyValuePair } from "@/components/properties/key-value-pair";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
