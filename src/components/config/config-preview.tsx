@@ -5,6 +5,7 @@ import { memo, useEffect, useState } from "react";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { Button } from "@/components/ui/button";
 import type { Properties } from "@/lib/schema";
+import { Textarea } from "../ui/textarea";
 
 interface ConfigPreviewProps {
   config: Properties;
@@ -24,8 +25,6 @@ const ConfigPreview = memo(function ConfigPreview({
   useEffect(() => {
     setEditValue(JSON.stringify(config, null, 2));
   }, [config]);
-
-  const _configJson = JSON.stringify(config, null, 2);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(editValue);
@@ -92,10 +91,9 @@ const ConfigPreview = memo(function ConfigPreview({
           </div>
         </div>
         <div className="flex-1 overflow-auto p-4 lg:p-6">
-          <textarea
+          <Textarea
             value={editValue}
             onChange={(e) => handleChange(e.target.value)}
-            aria-label="Configuration JSON preview"
             className="w-full h-full min-h-[300px] text-sm font-mono bg-card border border-border rounded-lg p-4 text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring"
             spellCheck={false}
           />

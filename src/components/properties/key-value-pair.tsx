@@ -71,7 +71,7 @@ export function KeyValuePair({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="flex items-center gap-3 px-4 py-3 bg-muted/20">
+      <div className="flex items-center gap-3 px-4 py-1 bg-muted/20">
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleTrigger asChild>
             <button

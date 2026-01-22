@@ -62,15 +62,17 @@ export default function ConfigGeneratorSection({
             value &&
             typeof value === "string"
           ) {
-            const keybinds =
-              ((draft as unknown as NestedRecord).keybinds as NestedRecord) ||
-              {};
-            if (!(draft as unknown as NestedRecord).keybinds) {
-              (draft as unknown as NestedRecord).keybinds = keybinds;
+            const keybinds = draft.keybinds || {};
+
+            if (!draft.keybinds) {
+              draft.keybinds = keybinds;
             }
+
             const hasLeaderKey =
               keybinds.leader !== undefined && keybinds.leader !== "";
+
             const isLeaderUpdate = String(keys[1]) === "leader";
+
             let processedValue = value;
 
             if (!hasLeaderKey && !isLeaderUpdate) {
@@ -114,7 +116,10 @@ export default function ConfigGeneratorSection({
   );
 
   return (
-    <ResizablePanelGroup className="flex h-full min-h-0 flex-col md:flex-row overflow-hidden">
+    <ResizablePanelGroup
+      dir="horizontal"
+      className="flex h-full min-h-0 flex-col md:flex-row overflow-hidden"
+    >
       <ResizablePanel className="flex-1 min-h-0 bg-[#1A1818] p-4 overflow-auto">
         <ConfigForm
           schema={schema}

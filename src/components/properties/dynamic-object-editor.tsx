@@ -115,7 +115,10 @@ export function DynamicObjectEditor({
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm capitalize">{name}</Label>
+      <Label className="text-base">{name}</Label>
+      {"description" in schema && schema.description && (
+        <p className="text-sm text-muted-foreground">{schema.description}</p>
+      )}
       <div className="space-y-3">
         {entries.map(([key, entryValue]) => (
           <KeyValuePair
@@ -134,15 +137,13 @@ export function DynamicObjectEditor({
         {isAdding && (
           <div className="border border-border rounded-lg bg-card overflow-hidden">
             <div className="flex items-center gap-3 px-4 py-3 bg-muted/20 border-b border-border/50">
-              <span className="text-sm font-medium capitalize">
-                New {propertyName}
-              </span>
+              <span className="text-sm font-medium">New {propertyName}</span>
               <div className="flex-1" />
               <Button variant="ghost" size="icon" onClick={handleCancel}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <div className="p-4">
+            <div className="p-4 py-2">
               <div className="space-y-2">
                 <Label htmlFor="new-key">Key</Label>
                 <div className="flex gap-2">
@@ -182,7 +183,7 @@ export function DynamicObjectEditor({
           onClick={() => setIsAdding(true)}
           className="w-full"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4" />
           Add {propertyName}
         </Button>
       )}
